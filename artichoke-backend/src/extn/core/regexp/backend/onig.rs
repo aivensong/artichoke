@@ -228,13 +228,16 @@ impl RegexpType for Onig {
         let mrb = interp.0.borrow().mrb;
         if let Some(captures) = self.regex.captures(pattern) {
             let globals_to_set = cmp::max(interp.0.borrow().active_regexp_globals, captures.len());
-            let sym = interp.0.borrow_mut().sym_intern("$&");
+            let sym = interp.0.borrow_mut().sym_intern("$&".as_bytes());
             let value = interp.convert(captures.at(0));
             unsafe {
                 sys::mrb_gv_set(mrb, sym, value.inner());
             }
             for group in 1..=globals_to_set {
-                let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                let sym = interp
+                    .0
+                    .borrow_mut()
+                    .sym_intern(format!("${}", group).into_bytes());
                 let value = interp.convert(captures.at(group));
                 unsafe {
                     sys::mrb_gv_set(mrb, sym, value.inner());
@@ -245,8 +248,8 @@ impl RegexpType for Onig {
             if let Some(match_pos) = captures.pos(0) {
                 let pre_match = &pattern[..match_pos.0];
                 let post_match = &pattern[match_pos.1..];
-                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-                let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+                let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
                 unsafe {
                     sys::mrb_gv_set(mrb, pre_match_sym, interp.convert(pre_match).inner());
                     sys::mrb_gv_set(mrb, post_match_sym, interp.convert(post_match).inner());
@@ -261,14 +264,14 @@ impl RegexpType for Onig {
             let matchdata = unsafe { matchdata.try_into_ruby(&interp, None) }.map_err(|_| {
                 Fatal::new(interp, "Could not create Ruby Value from Rust MatchData")
             })?;
-            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~");
+            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
             unsafe {
                 sys::mrb_gv_set(mrb, matchdata_sym, matchdata.inner());
             }
             Ok(true)
         } else {
-            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-            let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+            let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
             unsafe {
                 sys::mrb_gv_set(mrb, pre_match_sym, interp.convert(None::<Value>).inner());
                 sys::mrb_gv_set(mrb, post_match_sym, interp.convert(None::<Value>).inner());
@@ -352,13 +355,16 @@ impl RegexpType for Onig {
         let match_target = &pattern[byte_offset..];
         if let Some(captures) = self.regex.captures(match_target) {
             let globals_to_set = cmp::max(interp.0.borrow().active_regexp_globals, captures.len());
-            let sym = interp.0.borrow_mut().sym_intern("$&");
+            let sym = interp.0.borrow_mut().sym_intern("$&".as_bytes());
             let value = interp.convert(captures.at(0));
             unsafe {
                 sys::mrb_gv_set(mrb, sym, value.inner());
             }
             for group in 1..=globals_to_set {
-                let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                let sym = interp
+                    .0
+                    .borrow_mut()
+                    .sym_intern(format!("${}", group).into_bytes());
                 let value = interp.convert(captures.at(group));
                 unsafe {
                     sys::mrb_gv_set(mrb, sym, value.inner());
@@ -375,8 +381,8 @@ impl RegexpType for Onig {
             if let Some(match_pos) = captures.pos(0) {
                 let pre_match = &match_target[..match_pos.0];
                 let post_match = &match_target[match_pos.1..];
-                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-                let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+                let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
                 unsafe {
                     sys::mrb_gv_set(mrb, pre_match_sym, interp.convert(pre_match).inner());
                     sys::mrb_gv_set(mrb, post_match_sym, interp.convert(post_match).inner());
@@ -389,7 +395,7 @@ impl RegexpType for Onig {
                     "Failed to initialize Ruby MatchData Value with Rust MatchData",
                 )
             })?;
-            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~");
+            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
             unsafe {
                 sys::mrb_gv_set(mrb, matchdata_sym, data.inner());
             }
@@ -405,9 +411,9 @@ impl RegexpType for Onig {
                 Ok(data)
             }
         } else {
-            let last_match_sym = interp.0.borrow_mut().sym_intern("$~");
-            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-            let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+            let last_match_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
+            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+            let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
             unsafe {
                 sys::mrb_gv_set(mrb, last_match_sym, interp.convert(None::<Value>).inner());
                 sys::mrb_gv_set(mrb, pre_match_sym, interp.convert(None::<Value>).inner());
@@ -431,13 +437,16 @@ impl RegexpType for Onig {
         })?;
         if let Some(captures) = self.regex.captures(pattern) {
             let globals_to_set = cmp::max(interp.0.borrow().active_regexp_globals, captures.len());
-            let sym = interp.0.borrow_mut().sym_intern("$&");
+            let sym = interp.0.borrow_mut().sym_intern("$&".as_bytes());
             let value = interp.convert(captures.at(0));
             unsafe {
                 sys::mrb_gv_set(mrb, sym, value.inner());
             }
             for group in 1..=globals_to_set {
-                let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                let sym = interp
+                    .0
+                    .borrow_mut()
+                    .sym_intern(format!("${}", group).into_bytes());
                 let value = interp.convert(captures.at(group));
                 unsafe {
                     sys::mrb_gv_set(mrb, sym, value.inner());
@@ -457,15 +466,15 @@ impl RegexpType for Onig {
                     "Failed to initialize Ruby MatchData Value with Rust MatchData",
                 )
             })?;
-            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~");
+            let matchdata_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
             unsafe {
                 sys::mrb_gv_set(mrb, matchdata_sym, matchdata.inner());
             }
             if let Some(match_pos) = captures.pos(0) {
                 let pre_match = interp.convert(&pattern[..match_pos.0]);
                 let post_match = interp.convert(&pattern[match_pos.1..]);
-                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-                let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+                let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+                let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
                 unsafe {
                     sys::mrb_gv_set(mrb, pre_match_sym, pre_match.inner());
                     sys::mrb_gv_set(mrb, post_match_sym, post_match.inner());
@@ -478,9 +487,9 @@ impl RegexpType for Onig {
                 Ok(Some(0))
             }
         } else {
-            let last_match_sym = interp.0.borrow_mut().sym_intern("$~");
-            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`");
-            let post_match_sym = interp.0.borrow_mut().sym_intern("$'");
+            let last_match_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
+            let pre_match_sym = interp.0.borrow_mut().sym_intern("$`".as_bytes());
+            let post_match_sym = interp.0.borrow_mut().sym_intern("$'".as_bytes());
             let nil = interp.convert(None::<Value>).inner();
             unsafe {
                 sys::mrb_gv_set(mrb, last_match_sym, nil);
@@ -614,7 +623,7 @@ impl RegexpType for Onig {
             )
         })?;
         let mrb = interp.0.borrow().mrb;
-        let last_match_sym = interp.0.borrow_mut().sym_intern("$~");
+        let last_match_sym = interp.0.borrow_mut().sym_intern("$~".as_bytes());
         let mut matchdata = MatchData::new(
             haystack.as_bytes().to_vec(),
             Regexp::from(self.box_clone()),
@@ -628,7 +637,10 @@ impl RegexpType for Onig {
                 // zero old globals
                 let globals = interp.0.borrow().active_regexp_globals;
                 for group in 1..=globals {
-                    let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                    let sym = interp
+                        .0
+                        .borrow_mut()
+                        .sym_intern(format!("${}", group).into_bytes());
                     unsafe {
                         sys::mrb_gv_set(mrb, sym, sys::mrb_sys_nil_value());
                     }
@@ -642,14 +654,17 @@ impl RegexpType for Onig {
                     return Ok(value);
                 }
                 for captures in iter {
-                    let fullmatch = interp.0.borrow_mut().sym_intern("$&");
+                    let fullmatch = interp.0.borrow_mut().sym_intern("$&".as_bytes());
                     let fullcapture = interp.convert(captures.at(0));
                     unsafe {
                         sys::mrb_gv_set(mrb, fullmatch, fullcapture.inner());
                     }
                     let mut groups = vec![];
                     for group in 1..=len {
-                        let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                        let sym = interp
+                            .0
+                            .borrow_mut()
+                            .sym_intern(format!("${}", group).into_bytes());
                         let capture = interp.convert(captures.at(group));
                         groups.push(captures.at(group));
                         unsafe {
@@ -708,7 +723,10 @@ impl RegexpType for Onig {
                 // zero old globals
                 let globals = interp.0.borrow().active_regexp_globals;
                 for group in 1..=globals {
-                    let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                    let sym = interp
+                        .0
+                        .borrow_mut()
+                        .sym_intern(format!("${}", group).into_bytes());
                     unsafe {
                         sys::mrb_gv_set(mrb, sym, sys::mrb_sys_nil_value());
                     }
@@ -740,14 +758,17 @@ impl RegexpType for Onig {
                 }
                 let mut iter = collected.iter();
                 if let Some(fullcapture) = iter.next() {
-                    let fullmatch = interp.0.borrow_mut().sym_intern("$&");
+                    let fullmatch = interp.0.borrow_mut().sym_intern("$&".as_bytes());
                     let fullcapture = interp.convert(fullcapture.as_slice());
                     unsafe {
                         sys::mrb_gv_set(mrb, fullmatch, fullcapture.inner());
                     }
                 }
                 for (group, capture) in iter.enumerate() {
-                    let sym = interp.0.borrow_mut().sym_intern(&format!("${}", group));
+                    let sym = interp
+                        .0
+                        .borrow_mut()
+                        .sym_intern(format!("${}", group).into_bytes());
                     let capture = interp.convert(capture.as_slice());
                     unsafe {
                         sys::mrb_gv_set(mrb, sym, capture.inner());
@@ -775,7 +796,7 @@ impl RegexpType for Onig {
                     sys::mrb_gv_set(mrb, last_match_sym, data.inner());
                 }
                 if let Some(fullcapture) = collected.last().copied() {
-                    let fullmatch = interp.0.borrow_mut().sym_intern("$&");
+                    let fullmatch = interp.0.borrow_mut().sym_intern("$&".as_bytes());
                     let fullcapture = interp.convert(fullcapture);
                     unsafe {
                         sys::mrb_gv_set(mrb, fullmatch, fullcapture.inner());
